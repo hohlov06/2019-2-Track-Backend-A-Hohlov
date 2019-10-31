@@ -155,6 +155,9 @@ class GameInterface:
                 self.player2 = inp
                 break
 
+def main():
+    game = GameInterface()
+    game.run()
+
 if __name__ == "__main__":
-    G = GameInterface()
-    G.run()
+    main()

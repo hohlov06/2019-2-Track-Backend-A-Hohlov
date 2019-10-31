@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<title> Pupa or lupa</title>
+<body>
+    <h1>Proxy server</h1>
+    <h2 id="pup"> Hmmm </h2>
+    <script>
+        let fl = true;
+
+        let func = function(){
+            if (fl == true){
+            fl = false;
+            pup.innerHTML = "Pupa";
+        } else{
+            fl = true;
+            pup.innerHTML = "Lupa";
+        }
+        }
+        setInterval(func, 1000)
+    </script>
+</body>
+</html>

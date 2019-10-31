@@ -1,4 +1,8 @@
 #! /usr/bin/env python
 
+import os
+
 if __name__ == "__main__":
-    print("Hello, world")
+    print(os.path.abspath(__file__))
+    print(os.path.dirname(os.path.abspath(__file__)))
+    print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
