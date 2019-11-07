@@ -32,8 +32,10 @@ def chats_detail(request, pk):
 @require_http_methods(["POST"])
 def create_chat(request):
     user_id = request.POST.get('user_id', False)
+    is_group_chat = request.POST.get('is_group_chat', False)
+    topic = request.POST.get('topic', 'Default_topic')
     if not user_id:
         return HttpResponseBadRequest
-    new_chat = Chat.objects.create(is_group_chat=True, topic='Default topic')
+    new_chat = Chat.objects.create(is_group_chat=is_group_chat, topic=topic)
     new_member = Member.objects.create(user_id=user_id, chat_id=new_chat.id, new_messages=0)
     return JsonResponse({'new_chat_id': new_chat.id, 'member_id': new_member.id})
