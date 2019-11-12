@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_http_methods
 from users.models import User
@@ -18,10 +18,7 @@ def users_list(request):
 @require_http_methods(["GET"])
 def users_profile(request, pk):
     user = User.objects.values('username', 'first_name', 'last_name', 'email', 'nick', 'avatar')
-    try:
-        user = user.get(id=pk)
-    except User.DoesNotExist:
-        raise Http404
+    user = get_object_or_404(user, id=pk)
     #user = user.values('username', 'first_name', 'last_name', 'email', 'nick', 'avatar')
     return JsonResponse({'user': dict(user)})
 

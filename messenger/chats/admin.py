@@ -20,6 +20,7 @@ class MessageAdmin(admin.ModelAdmin):
 class MemberAdmin(admin.ModelAdmin):
     list_display = ('id', 'user_id', 'chat_id', 'new_messages', 'last_read_message_id')
     list_filter = ('user_id', 'chat_id')
+    list_per_page = 50
 
 
 admin.site.register(Member, MemberAdmin)
