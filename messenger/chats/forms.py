@@ -2,15 +2,6 @@ from django import forms
 from chats.models import Chat, Member, Message, Attachment
 
 
-def validate_iso8601(str_val):
-    try:
-        if match_iso8601(str_val) is not None:
-            return True
-    except ...:
-        pass
-    return False
-
-
 class ChatForm(forms.ModelForm):
     class Meta:
         model = Chat
@@ -40,7 +31,7 @@ class AttachmentForm(forms.ModelForm):
 class MemberForm(forms.ModelForm):
     class Meta:
         model = Member
-        fields = '__all__'
+        fields = ['user', 'chat']
 
 
 class GetChatListForm(forms.Form):
@@ -71,3 +62,10 @@ class ReadMessageForm(forms.Form):
     member_id = forms.IntegerField(label='member_id')
     message_id = forms.IntegerField(label='message_id')
     unread = forms.IntegerField(label='unread', required=False)
+
+    def clean_unread(self):
+        unread = self.cleaned_data['unread']
+        if unread is None or unread < 0:
+            return None
+        else:
+            return unread

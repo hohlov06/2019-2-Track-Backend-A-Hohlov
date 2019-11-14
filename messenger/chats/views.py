@@ -4,8 +4,7 @@ from django.views.decorators.http import require_http_methods
 from chats.models import Chat, Member, Message
 from users.models import User
 from django.views.decorators.csrf import csrf_exempt
-from datetime import datetime
-from chats.forms import * # TODO fix
+from chats.forms import *  # TODO fix
 
 
 @require_http_methods(["GET", "POST"])
@@ -25,7 +24,7 @@ def chats_list(request):
     return JsonResponse({}, status=400)
 
 
-@require_http_methods(["GET"]) # TODO validate
+@require_http_methods(["GET"])
 def chats_detail(request, pk):
     chat = Chat.objects.values('is_group_chat', 'topic', 'last_message')
     chat = get_object_or_404(chat, id=pk)
@@ -33,16 +32,31 @@ def chats_detail(request, pk):
 
 
 @csrf_exempt  # delete later
-@require_http_methods(["POST"]) # TODO validate
+@require_http_methods(["POST"])
 def create_chat(request):
-    form = ChatForm(request)
+    form = ChatForm(request.POST)
     if form.is_valid():
         new_chat = form.save()
-        new_member = Member.objects.create(user_id=new_chat.user.id, chat_id=new_chat.id, new_messages=0)
-        return JsonResponse({'new_chat_id': new_chat.id, 'member_id': new_member.id}, status=201)
+        return JsonResponse({'new_chat_id': new_chat.id}, status=201)
     return JsonResponse({}, status=400)
 
-l
+
+@csrf_exempt  # delete later
+@require_http_methods(["POST"])
+def create_member(request):
+    form = MemberForm(request.POST)
+    if form.is_valid():
+        chat = form.cleaned_data['chat']
+        if Member.objects.filter(chat_id=chat.id, user_id=form.cleaned_data['user'].id).count() > 0:
+            return JsonResponse({'message': 'member already exists'}, status=406)
+        if not chat.is_group_chat:
+            if Member.objects.filter(chat_id=chat.id).count() > 1:
+                return JsonResponse({'message': 'group chat can\'t contain more than 2 members'}, status=406)
+        new_member = form.save()
+        return JsonResponse({'member_id': new_member.id}, status=201)
+    return JsonResponse({}, status=400)
+
+
 @require_http_methods(["GET"])
 def messages_list(request):
     form = GetMessagesListForm(request.GET)
@@ -60,24 +74,28 @@ def messages_list(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def post_message(request):
-    member_id = request.POST.get('member_id', False)
     form = MessageForm(request.POST)
-
     if form.is_valid():
         user = form.cleaned_data['user']
         chat = form.cleaned_data['chat']
-        member = get_object_or_404(Member, user_id=user.id, chat_id=chat.id)
+        members = get_list_or_404(Member, chat_id=chat.id)
         new_message = form.save()
-        member.chat.last_message = new_message.id
-        member.chat.save()
-        member.new_messages = member.new_messages + 1
-        member.save()
+        chat.last_message = new_message.id
+        chat.save()
+        for mem in members:
+            if mem.user.id is not user.id:
+                mem.new_messages = mem.new_messages + 1
+                mem.save()
+            else:
+                mem.new_messages = 0
+                mem.last_read_message = new_message
+                mem.save()
         return JsonResponse({}, status=201)
     return JsonResponse({}, status=400)
 
 
 @csrf_exempt
-@require_http_methods(["POST"])  # TODO validate
+@require_http_methods(["POST"])
 def read_message(request):
     form = ReadMessageForm(request.POST)
     if form.is_valid():

@@ -5,7 +5,7 @@ from users.models import User
 class Chat(models.Model):
     is_group_chat = models.BooleanField(verbose_name='это групповой чат?')
     topic = models.CharField(max_length=16, verbose_name='Название')
-    last_message = models.IntegerField(null=True, blank=True, verbose_name='ID последнего сообщения')  # TODO default = 0
+    last_message = models.IntegerField(default=0, verbose_name='ID последнего сообщения')
 #    last_message = models.ForeignKey('Message', on_delete=models.CASCADE, null=True)
 
     class Meta:
